@@ -1,18 +1,11 @@
-.container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  width: 100%;
+.movieReviewsWrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
 }
 
-.list {
-  list-style: none;
-  padding: 0;
-}
-
-.item {
-  margin-bottom: 10px;
-  border-bottom: 1px solid #ddd;
-  padding-bottom: 10px;
+.movieReviewsItem {
+border: 1px solid black;
+border-radius: 4px;
+padding: 8px;
 }

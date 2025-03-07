@@ -1,32 +1,34 @@
-import { Suspense, lazy } from "react";
-import Navigation from "./components/Navigation/Navigation";
-import styles from "./App.module.css";
-import { Routes, Route } from "react-router-dom";
+import {Routes, Route} from 'react-router-dom';
+import {lazy, Suspense} from 'react';
+import Loader from './components/Loader/Loader';
+import Navigation from './components/Navigation/Navigation.jsx';
 
-const HomePage = lazy(() => import("./pages/HomePage/HomePage"));
-const MoviesPage = lazy(() => import("./pages/MoviesPage/MoviesPage"));
+const HomePage = lazy(() => import('./pages/HomePage/HomePage.jsx'));
+const MoviesPage = lazy(() => import('./pages/MoviesPage/MoviesPage.jsx'));
 const MovieDetailsPage = lazy(() =>
-  import("./pages/MovieDetailsPage/MovieDetailsPage")
+  import('./pages/MovieDetailsPage/MovieDetailsPage.jsx')
 );
-const NotFoundPage = lazy(() => import("./pages/NotFoundPage/NotFoundPage"));
-const Cast = lazy(() => import("./components/MovieCast/MovieCast"));
-const Reviews = lazy(() => import("./components/MovieReviews/MovieReviews"));
+const MovieCast = lazy(() => import('./components/MovieCast/MovieCast.jsx'));
+const MovieReviews = lazy(() =>
+  import('./components/MovieReviews/MovieReviews.jsx')
+);
+const NotFoundPage = lazy(() =>
+  import('./pages/NotFoundPage/NotFoundPage.jsx')
+);
 
 function App() {
   return (
-    <div className={styles.appContainer}>
-      <div className={styles.searchContainer}>
-        <Navigation />
-      </div>
-
-      <Suspense fallback={<div>Loading...</div>}>
+    <div className='appWrapper'>
+      <Navigation />
+      <Suspense fallback={<Loader />}>
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/movies" element={<MoviesPage />} />
           <Route path="/movies/:movieId" element={<MovieDetailsPage />}>
-            <Route path="cast" element={<Cast />} />
-            <Route path="reviews" element={<Reviews />} />
+            <Route path="cast" element={<MovieCast />} />
+            <Route path="reviews" element={<MovieReviews />} />
           </Route>
+
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </Suspense>

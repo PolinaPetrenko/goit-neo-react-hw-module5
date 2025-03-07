@@ -1,0 +1,18 @@
+.movieWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+@media (min-width: 1024px) {
+  .movieWrapper {
+    flex-direction: row;
+  }
+}
+
+.movieInfo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}

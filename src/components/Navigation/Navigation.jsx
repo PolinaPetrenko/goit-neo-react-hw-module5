@@ -1,35 +1,25 @@
-import { NavLink } from "react-router-dom";
-import styles from "./Navigation.module.css";
-import logo from "/4chan-color.svg";
+import css from './Navigation.module.css';
+import {NavLink} from 'react-router-dom';
 
-function Navigation() {
+const Navigation = () => {
   return (
     <header>
-      <nav className={styles.nav}>
-        <NavLink to="/" className={styles.logoLink}>
-          <img src={logo} alt="Logo" className={styles.logo} />
-        </NavLink>
-
-        {/* Інші посилання */}
+      <nav className={css.navigationWrapper}>
         <NavLink
           to="/"
-          className={({ isActive }) =>
-            isActive ? `${styles.link} ${styles.active}` : styles.link
-          }
+          className={({isActive}) => (isActive ? css.active : '')}
         >
           Home
         </NavLink>
         <NavLink
           to="/movies"
-          className={({ isActive }) =>
-            isActive ? `${styles.link} ${styles.active}` : styles.link
-          }
+          className={({isActive}) => (isActive ? css.active : '')}
         >
           Movies
         </NavLink>
       </nav>
     </header>
   );
-}
+};
 
 export default Navigation;

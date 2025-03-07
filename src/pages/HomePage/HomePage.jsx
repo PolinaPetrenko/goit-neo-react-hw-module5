@@ -1,34 +1,45 @@
-import { useEffect, useState } from "react";
-import { fetchTrendingMovies } from "../../api/tmdbApi";
-import MovieList from "../../components/MovieList/MovieList";
-import styles from "./HomePage.module.css";
+import css from './HomePage.module.css';
+import {useState, useEffect} from 'react';
+import {useLocation} from 'react-router-dom';
+import {fetchTrendingMovies} from '../../api/movies';
+import Loader from '../../components/Loader/Loader.jsx';
+import ErrorMessage from '../../components/ErrorMessage/ErrorMessage.jsx';
+import MovieList from '../../components/MovieList/MovieList.jsx';
 
-function HomePage() {
+const HomePage = () => {
   const [movies, setMovies] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(false);
+  const location = useLocation();
 
   useEffect(() => {
-    setLoading(true);
-    fetchTrendingMovies()
-      .then(setMovies)
-      .catch((err) => {
-        setError("Failed to load trading movies.");
-        console.error(err);
-      })
-      .finally(() => setLoading(false));
-  }, []);
+    const getTrendingMovies = async () => {
+      try {
+        setIsLoading(true);
+        setError(false);
+        const movies = await fetchTrendingMovies(); 
+        setMovies(movies); 
+      } catch {
+        setError(true);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (location.pathname === '/') {
+      getTrendingMovies();
+    }
+  }, [location]);
 
   return (
-    <div className={styles.homePageContainer}>
-      <div className={styles.mainContent}>
-        <h1>Trending Movies</h1>
-      </div>
-      {loading && <p>Загрузка...</p>}
-      {error && <p className={styles.error}>{error}</p>}
-      {movies.length > 0 && <MovieList movies={movies} />}
+    <div>
+      <h1>Trending today</h1>
+      {isLoading && <Loader />} 
+      {!isLoading && movies.length === 0 && !error && <p>No movies found!</p>} 
+      {error && !isLoading && <ErrorMessage />}
+      <MovieList movies={movies} />
     </div>
   );
-}
+};
 
 export default HomePage;

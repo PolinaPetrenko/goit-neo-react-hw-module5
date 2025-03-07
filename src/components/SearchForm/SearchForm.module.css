@@ -1,0 +1,35 @@
+.searchWrapper {
+  border: 2px solid black;
+  display: flex;
+  align-items: center;
+  min-width: 320px;
+  border-radius: 8px;
+  background-color: white;
+  margin-top: 12px;
+  width: 240px;
+}
+
+.searchButton {
+  border: none;
+  background-color: transparent;
+  padding: 4px;
+  cursor: pointer;
+}
+
+.searchInput {
+  border: none;
+  display: flex;
+  flex-grow: 1;
+  height: 100%;
+  padding: 4px;
+  background-color: transparent;
+}
+
+.searchInput:focus {
+  outline: none;
+}
+
+.SearchIcon {
+  width: 20px;
+  height: 20px;
+}

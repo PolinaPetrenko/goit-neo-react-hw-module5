@@ -1,70 +1,59 @@
-import { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
-import { searchMovies } from "../../api/tmdbApi";
-import SearchMovies from "../../components/SearchMovies/SearchMovies";
-import MovieList from "../../components/MovieList/MovieList";
-import styles from "./MoviesPage.module.css";
+import css from './MoviesPage.module.css';
+import {lazy, useEffect, useState} from 'react';
+import {useSearchParams} from 'react-router-dom';
+import Loader from '../../components/Loader/Loader.jsx';
+import ErrorMessage from '../../components/ErrorMessage/ErrorMessage.jsx';
+import SearchForm from '../../components/SearchForm/SearchForm.jsx';
+import NotFoundPage from '../NotFoundPage/NotFoundPage.jsx';
+import {fetchSearchMovie} from '../../api/movies.js';
+import toast, {Toaster} from 'react-hot-toast';
 
-function MoviesPage() {
+const MovieList = lazy(() =>
+  import('../../components/MovieList/MovieList.jsx')
+);
+
+const MoviesPage = () => {
   const [movies, setMovies] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
-
-  const query = searchParams.get("query") || "";
+  const query = searchParams.get('query');
 
   useEffect(() => {
-    if (!query) return;
-
-    const fetchMovies = async () => {
-      setLoading(true);
+    const fetchMoviesByQuery = async query => {
       try {
-        const data = await searchMovies(query);
-        if (data.length === 0) {
-          setError("No movies found.");
-          setMovies([]);
-        } else {
-          setMovies(data);
-          setError(null);
-        }
-      } catch (err) {
-        setError("Error searching movies");
-        console.error("Error searching movies:", err);
+        setIsLoading(true);
+        setError(false);
+        const results = await fetchSearchMovie(query);
+        setMovies(results);
+      } catch {
+        setError(true);
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     };
 
-    fetchMovies();
+    if (query && query.length > 1) {
+      fetchMoviesByQuery(query);
+    }
   }, [query]);
 
-  const handleSearch = (newQuery) => {
-    if (newQuery.trim() === "") {
-      setSearchParams({});
-      setMovies([]);
-      setError(null);
-      return;
-    }
-    setSearchParams({ query: newQuery });
+  const handleSearch = searchQuery => {
+    setSearchParams({query: searchQuery});
   };
 
+  const noResultsFound = movies.length === 0 && !isLoading && !error && query;
+
   return (
-    <div className={styles.moviesPageContainer}>
-      <div className={styles.mainContent}>
-        <h1>Search Movies</h1>
-      </div>
-
-      <div className={styles.searchForm}>
-        <SearchMovies onSearch={handleSearch} />
-      </div>
-
-      {loading && <p>Загрузка...</p>}
-
-      {error && <p className={styles.error}>{error}</p>}
-
-      {movies.length > 0 && <MovieList movies={movies} />}
-    </div>
+    <>
+      <Toaster position="top-right" />
+      <SearchForm onSubmit={handleSearch} />
+      {isLoading && <Loader />}
+      {error && !isLoading && <ErrorMessage />}
+      {noResultsFound && <NotFoundPage />}
+      <MovieList movies={movies} />
+    </>
   );
-}
+};
 
 export default MoviesPage;

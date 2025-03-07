@@ -1,50 +1,57 @@
-import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import { fetchMovieCast } from "../../api/tmdbApi";
-import styles from "./MovieCast.module.css";
+import css from './MovieCast.module.css';
+import {useEffect, useState} from 'react';
+import {useParams} from 'react-router-dom';
+import {fetchMovieCast} from '../../api/movies';
+import Loader from '../Loader/Loader';
+import ErrorMessage from '../ErrorMessage/ErrorMessage';
 
-function MovieCast() {
-  const { movieId } = useParams();
-  const [cast, setCast] = useState([]);
+const MovieCast = () => {
+  const {movieId} = useParams();
+
+  const [movieCast, setMovieCast] = useState(null);
+  const [error, setError] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    const getCast = async () => {
+    const fetchMovieDetails = async () => {
+      setIsLoading(true);
+      setError(false);
       try {
-        const data = await fetchMovieCast(movieId);
-        if (data) setCast(data);
+        const cast = await fetchMovieCast(movieId);
+        setMovieCast(cast.filter(actor => actor.profile_path !== null));
       } catch (error) {
-        console.error("Error fetching movie cast:", error);
+        setError(error);
+      } finally {
+        setIsLoading(false);
       }
     };
-
-    getCast();
+    fetchMovieDetails();
   }, [movieId]);
 
   return (
-    <div className={styles.container}>
-      <h3>Cast</h3>
-      {cast.length > 0 ? (
-        <ul className={styles.list}>
-          {cast.map(({ id, name, profile_path }) => (
-            <li key={id} className={styles.item}>
+    <div>
+      {isLoading && <Loader />}
+      {error && <ErrorMessage />}
+      {movieCast && (
+        <ul className={css.movieCastWrapper}>
+          {movieCast.map(actor => (
+            <li key={actor.id} className={css.movieCastItem}>
               <img
-                src={
-                  profile_path
-                    ? `https://image.tmdb.org/t/p/w200${profile_path}`
-                    : "https://via.placeholder.com/200x300?text=No+Image"
-                }
-                alt={name}
-                className={styles.image}
+                src={`https://image.tmdb.org/t/p/w500${actor.profile_path}`}
+                alt={actor.name}
+                width="160"
+                className={css.movieCastItemImage}
               />
-              <p>{name}</p>
+              <div className={css.movieCastItemInfo}>
+                <p>{actor.name}</p>
+                <p>Character: {actor.character}</p>
+              </div>
             </li>
           ))}
         </ul>
-      ) : (
-        <p>No cast information available.</p>
       )}
     </div>
   );
-}
+};
 
 export default MovieCast;

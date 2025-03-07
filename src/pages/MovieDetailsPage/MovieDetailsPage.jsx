@@ -1,63 +1,60 @@
-import { useParams, Link, Outlet, useLocation } from "react-router-dom";
-import { useEffect, useState } from "react";
-import { fetchMovieDetails } from "../../api/tmdbApi";
-import styles from "./MovieDetailsPage.module.css";
+import css from './MovieDetailsPage.module.css';
+import { Link, Outlet, useLocation, useParams } from 'react-router-dom';
+import { lazy, Suspense, useEffect, useState, useRef } from 'react';
+import { BiArrowBack } from 'react-icons/bi';
+import Loader from '../../components/Loader/Loader';
+import ErrorMessage from '../../components/ErrorMessage/ErrorMessage';
+import { fetchMovieDetails } from '../../api/movies'; 
 
-function MovieDetailsPage() {
-  const { movieId } = useParams();
+const MovieDetails = lazy(() => import('../../components/MovieDetails/MovieDetails'));
+const AdditionalInformation = lazy(() => import('../../components/AdditionalInformation/AdditionalInformation'));
+
+const MovieDetailsPage = () => {
   const location = useLocation();
-  const [movie, setMovie] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const backLink = useRef(location.state ?? '/movies');
+  const { movieId } = useParams();
 
-  const backLink = location.state?.from || "/movies";
+  const [movieDetails, setMovieDetails] = useState(null);
+  const [error, setError] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    const getMovieDetails = async () => {
+    const fetchDetails = async () => {
+      setIsLoading(true);
+      setError(false);
       try {
-        setLoading(true);
-        const data = await fetchMovieDetails(movieId);
-        setMovie(data);
-        setError(null);
-      } catch (error) {
-        console.error("Error fetching movie details:", error);
-        setError("Failed to load movie details.");
+        const movie = await fetchMovieDetails(movieId); 
+        setMovieDetails(movie); 
+      } catch (err) {
+        setError(true); 
       } finally {
-        setLoading(false);
+        setIsLoading(false); 
       }
     };
 
-    getMovieDetails();
-  }, [movieId]);
-
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>{error}</div>;
-  if (!movie) return <div>No movie details found.</div>;
+    fetchDetails();
+  }, [movieId]); 
 
   return (
-    <div className={styles.container}>
-      <Link to={backLink} className={styles.goBack}>
-        &larr; Go Back
+    <div className={css.movieDetailsPage}>
+      <Link className={css.backArrow} to={backLink.current}>
+        <BiArrowBack size="18" /> Go Back
       </Link>
-      <h1>{movie.title}</h1>
-      <img
-        src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
-        alt={movie.title}
-      />
-      <p>{movie.overview}</p>
-
-      <div className={styles.links}>
-        <Link to="cast" state={{ from: backLink }}>
-          Cast
-        </Link>
-        <Link to="reviews" state={{ from: backLink }}>
-          Reviews
-        </Link>
-      </div>
-
-      <Outlet />
+      {isLoading && <Loader />}
+      {error && <ErrorMessage />}
+      {movieDetails && (
+        <div>
+          <MovieDetails movie={movieDetails} />
+          <hr />
+          <AdditionalInformation />
+          <hr />
+        </div>
+      )}
+      <Suspense fallback={<Loader />}>
+        <Outlet />
+      </Suspense>
     </div>
   );
-}
+};
 
 export default MovieDetailsPage;
